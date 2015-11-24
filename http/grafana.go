@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/astaxie/beego/orm"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -13,18 +14,37 @@ import (
 	"time"
 )
 
+type Province struct {
+	Id         int
+	Province   string
+	Count      int
+	Longitude  float32
+	Latiitude  float32
+	Updated_at string
+}
+
+type City struct {
+	Id         int
+	City       string
+	Province   string
+	Count      int
+	Longitude  float32
+	Latiitude  float32
+	Updated_at string
+}
+
 /**
- * @function name:  func getHosts(rw http.ResponseWriter, req *http.Request, hostKeyword string)
- * @description:    This function returns available hosts for Grafana query editor.
- * @related issues: OWL-151
- * @param:          rw http.ResponseWriter
- * @param:          req *http.Request
- * @param:          hostKeyword string
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/17/2015
- * @last modified:  11/18/2015
- * @called by:      func setQueryEditor(rw http.ResponseWriter, req *http.Request, hostKeyword string)
+ * @function name:   func getHosts(rw http.ResponseWriter, req *http.Request, hostKeyword string)
+ * @description:     This function returns available hosts for Grafana query editor.
+ * @related issues:  OWL-151
+ * @param:           rw http.ResponseWriter
+ * @param:           req *http.Request
+ * @param:           hostKeyword string
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/17/2015
+ * @last modified:   11/18/2015
+ * @called by:       func setQueryEditor(rw http.ResponseWriter, req *http.Request, hostKeyword string)
  */
 func getHosts(rw http.ResponseWriter, req *http.Request, hostKeyword string) {
 	hostKeyword = strings.Replace(hostKeyword, "*", "", -1)
@@ -77,16 +97,16 @@ func getHosts(rw http.ResponseWriter, req *http.Request, hostKeyword string) {
 }
 
 /**
- * @function name:  func getNextCounterSegment(metric string, counter string) string
- * @description:    This function returns next segment of a counter.
- * @related issues: OWL-151
- * @param:          metric string
- * @param:          counter string
- * @return:         segment string
- * @author:         Don Hsieh
- * @since:          11/18/2015
- * @last modified:  11/18/2015
- * @called by:      func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
+ * @function name:   func getNextCounterSegment(metric string, counter string) string
+ * @description:     This function returns next segment of a counter.
+ * @related issues:  OWL-151
+ * @param:           metric string
+ * @param:           counter string
+ * @return:          segment string
+ * @author:          Don Hsieh
+ * @since:           11/18/2015
+ * @last modified:   11/18/2015
+ * @called by:       func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
  */
 func getNextCounterSegment(metric string, counter string) string {
 	if len(metric) > 0 {
@@ -98,16 +118,16 @@ func getNextCounterSegment(metric string, counter string) string {
 }
 
 /**
- * @function name:  func checkSegmentExpandable(segment string, counter string) bool
- * @description:    This function checks if a segment is expandable.
- * @related issues: OWL-151
- * @param:          segment string
- * @param:          counter string
- * @return:         expandable bool
- * @author:         Don Hsieh
- * @since:          11/18/2015
- * @last modified:  11/18/2015
- * @called by:      func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
+ * @function name:   func checkSegmentExpandable(segment string, counter string) bool
+ * @description:     This function checks if a segment is expandable.
+ * @related issues:  OWL-151
+ * @param:           segment string
+ * @param:           counter string
+ * @return:          expandable bool
+ * @author:          Don Hsieh
+ * @since:           11/18/2015
+ * @last modified:   11/18/2015
+ * @called by:       func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
  */
 func checkSegmentExpandable(segment string, counter string) bool {
 	segments := strings.Split(counter, ".")
@@ -116,17 +136,17 @@ func checkSegmentExpandable(segment string, counter string) bool {
 }
 
 /**
- * @function name:  func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
- * @description:    This function returns available segments of a metric for Grafana query editor.
- * @related issues: OWL-151
- * @param:          rw http.ResponseWriter
- * @param:          req *http.Request
- * @param:          query string
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/17/2015
- * @last modified:  11/18/2015
- * @called by:      func setQueryEditor(rw http.ResponseWriter, req *http.Request, hostKeyword string)
+ * @function name:   func getMetrics(rw http.ResponseWriter, req *http.Request, query string)
+ * @description:     This function returns available segments of a metric for Grafana query editor.
+ * @related issues:  OWL-151
+ * @param:           rw http.ResponseWriter
+ * @param:           req *http.Request
+ * @param:           query string
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/17/2015
+ * @last modified:   11/18/2015
+ * @called by:       func setQueryEditor(rw http.ResponseWriter, req *http.Request, hostKeyword string)
  */
 func getMetrics(rw http.ResponseWriter, req *http.Request, query string) {
 	result := []interface{}{}
@@ -211,16 +231,16 @@ func getMetrics(rw http.ResponseWriter, req *http.Request, query string) {
 }
 
 /**
- * @function name:  func setQueryEditor(rw http.ResponseWriter, req *http.Request)
- * @description:    This function returns arranges data for Grafana query editor.
- * @related issues: OWL-151
- * @param:          rw http.ResponseWriter
- * @param:          req *http.Request
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/17/2015
- * @last modified:  11/18/2015
- * @called by:      func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
+ * @function name:   func setQueryEditor(rw http.ResponseWriter, req *http.Request)
+ * @description:     This function returns arranges data for Grafana query editor.
+ * @related issues:  OWL-151
+ * @param:           rw http.ResponseWriter
+ * @param:           req *http.Request
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/17/2015
+ * @last modified:   11/18/2015
+ * @called by:       func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
  */
 func setQueryEditor(rw http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query().Get("query")
@@ -235,47 +255,95 @@ func setQueryEditor(rw http.ResponseWriter, req *http.Request) {
 }
 
 /**
- * @function name:  func getValues(rw http.ResponseWriter, req *http.Request)
- * @description:    This function returns metric values for Grafana to draw graph.
- * @related issues: OWL-151
- * @param:          rw http.ResponseWriter
- * @param:          req *http.Request
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/16/2015
- * @last modified:  11/17/2015
- * @called by:      func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
+ * @function name:   func getMapValues(chartType string) map[string]interface{}
+ * @description:     This function returns map values for Grafana to draw graph.
+ * @related issues:  OWL-159
+ * @param:           chartType string
+ * @return:          hosts map[string]interface{}
+ * @author:          Don Hsieh
+ * @since:           11/19/2015
+ * @last modified:   11/24/2015
+ * @called by:       func getValues(rw http.ResponseWriter, req *http.Request)
  */
-func getValues(rw http.ResponseWriter, req *http.Request) {
-	req.ParseForm()
-	endpoint_counters := []interface{}{}
-	for _, target := range req.PostForm["target"] {
-		if !strings.Contains(target, ".select metric") {
-			targets := strings.Split(target, ".")
-			host, targets := targets[0], targets[1:]
-			metric := strings.Join(targets, ".")
-			if strings.Contains(host, "{") {
-				host = strings.Replace(host, "{", "", -1)
-				host = strings.Replace(host, "}", "", -1)
-				hosts := strings.Split(host, ",")
-				for _, host := range hosts {	// Templating metrics request
-												// host:"{host1,host2}"
-					item := map[string]string {
-						"endpoint": host,
-						"counter": metric,
-					}
-					endpoint_counters = append(endpoint_counters, item)
-				}
-			} else {
-				item := map[string]string {
-					"endpoint": host,
-					"counter": metric,
-				}
-				endpoint_counters = append(endpoint_counters, item)
+func getMapValues(chartType string) map[string]interface{} {
+	hosts := map[string]interface{}{}
+	provinces := []interface{}{}
+	sqlcmd := "SELECT province, count FROM grafana.province WHERE 1"
+	o := orm.NewOrm()
+	var rows []orm.Params
+	num, err := o.Raw(sqlcmd).Values(&rows)
+	if err != nil {
+		log.Println("Error =", err.Error())
+	} else if num > 0 {
+		for _, row := range rows {
+			name := row["province"]
+			count := row["count"]
+			item := map[string]interface{} {
+				"name": name,
+				"value": count,
 			}
+			provinces = append(provinces, item)
 		}
 	}
-	result := []interface{}{}
+
+	citiesInProvince := []interface{}{}
+	sqlcmd = "SELECT city, count FROM grafana.city WHERE 1"
+	num, err = o.Raw(sqlcmd).Values(&rows)
+	if err != nil {
+		log.Println("Error =", err.Error())
+	} else if num > 0 {
+		for _, row := range rows {
+			name := row["city"]
+			count := row["count"]
+			item := map[string]interface{} {
+				"name": name,
+				"value": count,
+			}
+			citiesInProvince = append(citiesInProvince, item)
+		}
+	}
+	hosts["chartType"] = chartType
+	hosts["provinces"] = provinces
+	hosts["citiesInProvince"] = citiesInProvince
+	return hosts
+}
+
+/**
+ * @function name:   func getMetricValues(req *http.Request, host string, targets []string, result []interface{}) []interface{}
+ * @description:     This function returns map values for Grafana to draw graph.
+ * @related issues:  OWL-159
+ * @param:           req *http.Request
+ * @param:           host string
+ * @param:           targets []string
+ * @return:          result []interface{}
+ * @author:          Don Hsieh
+ * @since:           11/23/2015
+ * @last modified:   11/24/2015
+ * @called by:       func getValues(rw http.ResponseWriter, req *http.Request)
+ */
+func getMetricValues(req *http.Request, host string, targets []string, result []interface{}) []interface{} {
+	endpoint_counters := []interface{}{}
+	metric := strings.Join(targets, ".")
+	if strings.Contains(host, "{") {
+		host = strings.Replace(host, "{", "", -1)
+		host = strings.Replace(host, "}", "", -1)
+		hosts := strings.Split(host, ",")
+		for _, host := range hosts {	// Templating metrics request
+										// host:"{host1,host2}"
+			item := map[string]string {
+				"endpoint": host,
+				"counter": metric,
+			}
+			endpoint_counters = append(endpoint_counters, item)
+		}
+	} else {
+		item := map[string]string {
+			"endpoint": host,
+			"counter": metric,
+		}
+		endpoint_counters = append(endpoint_counters, item)
+	}
+
 	if len(endpoint_counters) > 0 {
 		from, err := strconv.ParseInt(req.PostForm["from"][0], 10, 64)
 		until, err := strconv.ParseInt(req.PostForm["until"][0], 10, 64)
@@ -319,26 +387,53 @@ func getValues(rw http.ResponseWriter, req *http.Request) {
 					result = append(result, node)
 				}
 			}
-			RenderJson(rw, result)
-		} else {
-			RenderJson(rw, result)
 		}
-	} else {
-		RenderJson(rw, result)
 	}
+	return result
 }
 
 /**
- * @function name:  func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
- * @description:    This function parses the method of API request.
- * @related issues: OWL-151
- * @param:          rw http.ResponseWriter
- * @param:          req *http.Request
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/16/2015
- * @last modified:  11/16/2015
- * @called by:      func configGrafanaRoutes()
+ * @function name:   func getValues(rw http.ResponseWriter, req *http.Request)
+ * @description:     This function returns metric values for Grafana to draw graph.
+ * @related issues:  OWL-159, OWL-151
+ * @param:           rw http.ResponseWriter
+ * @param:           req *http.Request
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/16/2015
+ * @last modified:   11/24/2015
+ * @called by:       func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
+ */
+func getValues(rw http.ResponseWriter, req *http.Request) {
+	result := []interface{}{}
+	req.ParseForm()
+	for _, target := range req.PostForm["target"] {
+		if !strings.Contains(target, ".select metric") {
+			targets := strings.Split(target, ".")
+			host, targets := targets[0], targets[1:]
+			if host == "chart" {
+				chartType := targets[len(targets)-1]
+				mapValues := getMapValues(chartType)
+				result = append(result, mapValues)
+			} else {
+				result = getMetricValues(req, host, targets, result)
+			}
+		}
+	}
+	RenderJson(rw, result)
+}
+
+/**
+ * @function name:   func GrafanaApiParser(rw http.ResponseWriter, req *http.Request)
+ * @description:     This function parses the method of API request.
+ * @related issues:  OWL-151
+ * @param:           rw http.ResponseWriter
+ * @param:           req *http.Request
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/16/2015
+ * @last modified:   11/16/2015
+ * @called by:       func configGrafanaRoutes()
  */
 func GrafanaApiParser(rw http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
@@ -349,16 +444,16 @@ func GrafanaApiParser(rw http.ResponseWriter, req *http.Request) {
 }
 
 /**
- * @function name:  func configGrafanaRoutes()
- * @description:    This function handles API requests.
- * @related issues: OWL-151
- * @param:          void
- * @return:         void
- * @author:         Don Hsieh
- * @since:          11/16/2015
- * @last modified:  11/16/2015
- * @called by:      func Start()
- *                   in http/http.go
+ * @function name:   func configGrafanaRoutes()
+ * @description:     This function handles API requests.
+ * @related issues:  OWL-151
+ * @param:           void
+ * @return:          void
+ * @author:          Don Hsieh
+ * @since:           11/16/2015
+ * @last modified:   11/16/2015
+ * @called by:       func Start()
+ *                    in http/http.go
  */
 func configGrafanaRoutes() {
 	http.HandleFunc("/api/grafana/", GrafanaApiParser)
