@@ -201,49 +201,6 @@ func setQueryEditor(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getMapValues(chartType string) map[string]interface{} {
-	hosts := map[string]interface{}{}
-	provinces := []interface{}{}
-	sqlcmd := "SELECT province, count FROM grafana.province WHERE 1"
-	o := orm.NewOrm()
-	var rows []orm.Params
-	num, err := o.Raw(sqlcmd).Values(&rows)
-	if err != nil {
-		log.Println("Error =", err.Error())
-	} else if num > 0 {
-		for _, row := range rows {
-			name := row["province"]
-			count := row["count"]
-			item := map[string]interface{}{
-				"name":  name,
-				"value": count,
-			}
-			provinces = append(provinces, item)
-		}
-	}
-
-	citiesInProvince := []interface{}{}
-	sqlcmd = "SELECT city, count FROM grafana.city WHERE 1"
-	num, err = o.Raw(sqlcmd).Values(&rows)
-	if err != nil {
-		log.Println("Error =", err.Error())
-	} else if num > 0 {
-		for _, row := range rows {
-			name := row["city"]
-			count := row["count"]
-			item := map[string]interface{}{
-				"name":  name,
-				"value": count,
-			}
-			citiesInProvince = append(citiesInProvince, item)
-		}
-	}
-	hosts["chartType"] = chartType
-	hosts["provinces"] = provinces
-	hosts["citiesInProvince"] = citiesInProvince
-	return hosts
-}
-
 func getMetricValues(req *http.Request, host string, targets []string, result []interface{}) []interface{} {
 	endpoint_counters := []interface{}{}
 	metric := strings.Join(targets, ".")
