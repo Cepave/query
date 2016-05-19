@@ -33,18 +33,25 @@ type ApiConfig struct {
 	Max       int    `json:"max"`
 }
 
-type DbConfig struct {
-	Addr string `json:"addr"`
-	Idle int    `json:"idle"`
-	Max  int    `json:"max"`
+type DatabaseConfig struct {
+	Addr     string `json:"addr"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+	Account  string `json:"account"`
+	Password string `json:"password"`
+	Table    string `json:"table"`
+	Options  string `json:"options"`
+	Idle     int    `json:"idle"`
+	Max      int    `json:"max"`
 }
 
 type GlobalConfig struct {
-	Debug bool         `json:"debug"`
-	Http  *HttpConfig  `json:"http"`
-	Graph *GraphConfig `json:"graph"`
-	Api   *ApiConfig   `json:"api"`
-	Db    *DbConfig    `json:"db"`
+	Debug bool            `json:"debug"`
+	Http  *HttpConfig     `json:"http"`
+	Graph *GraphConfig    `json:"graph"`
+	Api   *ApiConfig      `json:"api"`
+	Db    *DatabaseConfig `json:"db"`
 }
 
 var (
@@ -77,6 +84,9 @@ func ParseConfig(cfg string) {
 
 	var c GlobalConfig
 	err = json.Unmarshal([]byte(configContent), &c)
+	db := c.Db
+	db.Addr = fmt.Sprintf("%s:%s@%s(%s:%d)/%s?%s", db.Account, db.Password, db.Protocol, db.Host, db.Port, db.Table, db.Options)
+	c.Db = db
 	if err != nil {
 		log.Fatalln("parse config file", cfg, "error:", err.Error())
 	}
