@@ -25,7 +25,13 @@
         "max": 500
     },
     "db": {
-        "addr": "root:@tcp(127.0.0.1:3306)/falcon_portal?charset=utf8&loc=Asia%2FTaipei",
+        "host":  "127.0.0.1",
+        "port": 3306,
+        "protocol": "tcp",
+        "account": "root",
+        "password": "password",
+        "table": "falcon_portal",
+        "options": "charset=utf8&loc=Asia%2FTaipei",
         "idle": 10,
         "max": 100
     }
