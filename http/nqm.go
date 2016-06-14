@@ -45,6 +45,10 @@ func setupUrlMappingAndHandler(serviceRegister *beego.ControllerRegister) {
 		"get", "/nqm/icmp/province/:province_id([0-9]+)/list/by-targets",
 		listIcmpByTargetsForAProvince,
 	)
+	serviceRegister.AddMethod(
+		"get", "/nqm/province/:province_id([0-9]+)/agents",
+		listAgentsInProvince,
+	)
 }
 
 type resultWithDsl struct {
@@ -60,6 +64,12 @@ func (result *resultWithDsl) MarshalJSON() ([]byte, error) {
 	jsonObject.Set("result", result.resultData)
 
 	return jsonObject.MarshalJSON()
+}
+
+// Lists agents(grouped by city) for a province
+func listAgentsInProvince(ctx *context.Context) {
+	provinceId, _ := strconv.ParseInt(ctx.Input.Param(":province_id"), 10, 16)
+	ctx.Output.JSON(nqm.ListAgentsInCityByProvinceId(int32(provinceId)), jsonIndent, jsonCoding)
 }
 
 // Lists statistics data of ICMP, which would be grouped by provinces
@@ -85,10 +95,16 @@ func listIcmpByTargetsForAProvince(ctx *context.Context) {
 		return
 	}
 
-	provinceId, _ := strconv.ParseInt(ctx.Input.Param(":province_id"), 10, 16)
-
 	dslParams.AgentFilter.MatchProvinces = make([]string, 0) // Ignores the province of agent
+
+	provinceId, _ := strconv.ParseInt(ctx.Input.Param(":province_id"), 10, 16)
 	dslParams.AgentFilterById.MatchProvinces = []int16 { int16(provinceId) } // Use the id as the filter of agent
+
+	if cityId, parseErrForCityId := strconv.ParseInt(ctx.Input.Query("city_id_of_agent"), 10, 16)
+		parseErrForCityId == nil {
+		dslParams.AgentFilterById.MatchCities = []int16 { int16(cityId) } // Use the id as the filter of agent
+	}
+
 	listResult := nqmService.ListTargetsWithCityDetail(dslParams)
 	ctx.Output.JSON(&resultWithDsl{ queryParams: dslParams, resultData: listResult }, jsonIndent, jsonCoding)
 }

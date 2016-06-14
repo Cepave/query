@@ -3,6 +3,7 @@ package nqm
 import (
 	"fmt"
 	dsl "github.com/Cepave/query/dsl/nqm_parser" // As NQM intermediate representation
+	"log"
 )
 
 /**
@@ -26,8 +27,10 @@ type NqmDsl struct {
 
 	IdsOfAgentProvinces []Id2Bytes `json:"ids_of_agent_provinces"`
 	IdsOfAgentIsps []Id2Bytes `json:"ids_of_agent_isps"`
+	IdsOfAgentCities []Id2Bytes `json:"ids_of_agent_cities"`
 	IdsOfTargetProvinces []Id2Bytes `json:"ids_of_target_provinces"`
 	IdsOfTargetIsps []Id2Bytes `json:"ids_of_target_isps"`
+	IdsOfTargetCities []Id2Bytes `json:"ids_of_target_cities"`
 
 	ProvinceRelation dsl.HostRelation `json:"province_relation"`
 }
@@ -216,8 +219,10 @@ func toNqmDsl(queryParams *dsl.QueryParams) *NqmDsl {
 	return &NqmDsl{
 		IdsOfAgentProvinces: loadIds(queryParams.AgentFilter.MatchProvinces, getIdOfProvinceByName, queryParams.AgentFilterById.MatchProvinces),
 		IdsOfAgentIsps: loadIds(queryParams.AgentFilter.MatchIsps, getIdOfIspByName, queryParams.AgentFilterById.MatchIsps),
+		IdsOfAgentCities: loadIds(queryParams.AgentFilter.MatchCities, getIdOfCityByName, queryParams.AgentFilterById.MatchCities),
 		IdsOfTargetProvinces: loadIds(queryParams.TargetFilter.MatchProvinces, getIdOfProvinceByName, queryParams.TargetFilterById.MatchProvinces),
 		IdsOfTargetIsps: loadIds(queryParams.TargetFilter.MatchIsps, getIdOfIspByName, queryParams.TargetFilterById.MatchIsps),
+		IdsOfTargetCities: loadIds(queryParams.TargetFilter.MatchCities, getIdOfCityByName, queryParams.TargetFilterById.MatchCities),
 		StartTime: EpochTime(queryParams.StartTime.Unix()),
 		EndTime: EpochTime(queryParams.EndTime.Unix()),
 		ProvinceRelation: queryParams.ProvinceRelation,
@@ -268,5 +273,9 @@ func getIdOfProvinceByName(name string) Id2Bytes {
 }
 func getIdOfIspByName(name string) Id2Bytes {
 	return Id2Bytes(getIspByName(name).Id)
+}
+func getIdOfCityByName(name string) Id2Bytes {
+	log.Panicf("Unsupplied function: getIdOfCityByName() : %v", name)
+	return 0
 }
 // :~)

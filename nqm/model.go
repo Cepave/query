@@ -20,6 +20,23 @@ type Metrics struct {
 }
 // :~)
 
+// Represents the agents in city
+type AgentsInCity struct {
+	City *City `json:"city"`
+	Agents []Agent `json:"agents"`
+}
+
+// Represents the data of NQM agent
+type Agent struct {
+	Id int32 `json:"id"`
+	Name string `json:"name"`
+	Hostname string `json:"hostname"`
+	IpAddress string `json:"ip_address"`
+}
+func (agent *Agent) TableName() string {
+    return "nqm_agent"
+}
+
 /**
  * ORM/JSON Models
  */
