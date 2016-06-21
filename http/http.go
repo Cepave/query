@@ -2,13 +2,14 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/Cepave/query/g"
-	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"strings"
+
+	"github.com/Cepave/query/g"
+	"github.com/astaxie/beego/orm"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Dto struct {
@@ -19,11 +20,13 @@ type Dto struct {
 func InitDatabase() {
 	config := g.Config()
 	// set default database
+	//
 	orm.RegisterDataBase("default", "mysql", config.Db.Addr, config.Db.Idle, config.Db.Max)
 	// register model
 	orm.RegisterModel(new(Host), new(Grp), new(Grp_host), new(Grp_tpl), new(Plugin_dir), new(Tpl))
 	// set grafana database
 	strConn := strings.Replace(config.Db.Addr, "falcon_portal", "grafana", 1)
+
 	orm.RegisterDataBase("grafana", "mysql", strConn, config.Db.Idle, config.Db.Max)
 	orm.RegisterModel(new(Province), new(City), new(Idc))
 
@@ -35,7 +38,12 @@ func InitDatabase() {
 	}
 }
 
-func Start() {
+func Start(httpMsg chan<- string) {
+
+	defer func() {
+		httpMsg <- "http"
+	}()
+
 	if !g.Config().Http.Enabled {
 		log.Println("http.Start warning, not enable")
 		return
@@ -46,8 +54,10 @@ func Start() {
 	configProcHttpRoutes()
 	configGraphRoutes()
 	configAPIRoutes()
+	configAlertRoutes()
 	configGrafanaRoutes()
 	configZabbixRoutes()
+	configNqmRoutes()
 	configNQMRoutes()
 
 	// start mysql database

@@ -2,12 +2,19 @@ package g
 
 import (
 	"encoding/json"
-	"github.com/toolkits/file"
 	"log"
 	"sync"
+
+	"github.com/Cepave/query/logger"
+	"github.com/toolkits/file"
 )
 
 type HttpConfig struct {
+	Enabled bool   `json:"enabled"`
+	Listen  string `json:"listen"`
+}
+
+type GinHttpConfig struct {
 	Enabled bool   `json:"enabled"`
 	Listen  string `json:"listen"`
 }
@@ -24,9 +31,11 @@ type GraphConfig struct {
 type ApiConfig struct {
 	Name      string `json:"name"`
 	Token     string `json:"token"`
+	Contact   string `json:"contact"`
 	Event     string `json:"event"`
 	Map       string `json:"map"`
 	Geo       string `json:"geo"`
+	Uplink    string `json:"uplink"`
 	Query     string `json:"query"`
 	Dashboard string `json:"dashboard"`
 	Max       int    `json:"max"`
@@ -38,19 +47,38 @@ type DbConfig struct {
 	Max  int    `json:"max"`
 }
 
+type NqmLogConfig struct {
+	JsonrpcUrl string `json:"jsonrpcUrl"`
+}
+
 type NqmConfig struct {
 	Addr string `json:"addr"`
 	Idle int    `json:"idle"`
 	Max  int    `json:"max"`
 }
 
+type GrpcConfig struct {
+	Enabled bool `json:"enabled"`
+	Port    int  `json:"port"`
+}
+type GraphDB struct {
+	Addr  string `json:"addr"`
+	Idle  int    `json:"idle"`
+	Max   int    `json:"max"`
+	Limit int    `json:"limit"`
+}
+
 type GlobalConfig struct {
-	Debug bool         `json:"debug"`
-	Http  *HttpConfig  `json:"http"`
-	Graph *GraphConfig `json:"graph"`
-	Api   *ApiConfig   `json:"api"`
-	Db    *DbConfig    `json:"db"`
-	Nqm   *NqmConfig   `json:"nqm"`
+	Debug   bool           `json:"debug"`
+	Http    *HttpConfig    `json:"http"`
+	Graph   *GraphConfig   `json:"graph"`
+	Api     *ApiConfig     `json:"api"`
+	Db      *DbConfig      `json:"db"`
+	NqmLog  *NqmLogConfig  `json:nqmlog`
+	Nqm     *NqmConfig     `json:"nqm"`
+	Grpc    *GrpcConfig    `json:"grpc"`
+	GinHttp *GinHttpConfig `json:"gin_http"`
+	GraphDB *GraphDB       `json:"graphdb"`
 }
 
 var (
@@ -59,10 +87,18 @@ var (
 	configLock = new(sync.RWMutex)
 )
 
+// Gets the configuration
 func Config() *GlobalConfig {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	return config
+}
+
+// Sets the config directly
+func SetConfig(newConfig *GlobalConfig) {
+	configLock.RLock()
+	defer configLock.RUnlock()
+	config = newConfig
 }
 
 func ParseConfig(cfg string) {
@@ -87,10 +123,8 @@ func ParseConfig(cfg string) {
 		log.Fatalln("parse config file", cfg, "error:", err.Error())
 	}
 
-	// set config
-	configLock.Lock()
-	defer configLock.Unlock()
-	config = &c
+	SetConfig(&c)
 
+	logger.InitLogger(c.Debug)
 	log.Println("g.ParseConfig ok, file", cfg)
 }
