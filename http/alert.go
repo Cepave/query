@@ -2,14 +2,14 @@ package http
 
 import (
 	"fmt"
-	"github.com/Cepave/query/logger"
-	"github.com/astaxie/beego/orm"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
 func parsePlatformJSON(result map[string]interface{}) map[string]interface{} {
@@ -250,7 +250,7 @@ func getTemplateIDs(username string, sig string, result map[string]interface{}) 
 		setError("Please log in first", result)
 		return ""
 	}
-	if userRole == "2" || userRole == "1" { // admin user
+	if userRole == "1" || userRole == "2" { // admin user
 		return "*"
 	}
 	receiverTeamIDs := getReceiverTeamIDs(userID, result)
@@ -337,7 +337,6 @@ func getNotes(result map[string]interface{}) map[string]interface{} {
 }
 
 func queryAlerts(templateIDs string, result map[string]interface{}) []interface{} {
-	mylog := logger.Logger()
 	alerts := []interface{}{}
 	if templateIDs == "" {
 		return alerts
@@ -345,13 +344,13 @@ func queryAlerts(templateIDs string, result map[string]interface{}) []interface{
 	notes := getNotes(result)
 	o := orm.NewOrm()
 	var rows []orm.Params
-	sqlcmd := "SELECT id, endpoint, metric, note, priority, status, timestamp, template_id, tpl_creator, process_status "
+	sqlcmd := "SELECT id, endpoint, metric, note, priority, status, timestamp, update_at, template_id, tpl_creator, process_status "
 	sqlcmd += "FROM falcon_portal.event_cases "
 	if templateIDs != "*" {
 		sqlcmd += "WHERE template_id IN ("
 		sqlcmd += templateIDs + ") "
 	}
-	sqlcmd += "ORDER BY timestamp DESC LIMIT 600"
+	sqlcmd += "ORDER BY update_at DESC LIMIT 500"
 	num, err := o.Raw(sqlcmd).Values(&rows)
 	if err != nil {
 		setError(err.Error(), result)
@@ -364,14 +363,13 @@ func queryAlerts(templateIDs string, result map[string]interface{}) []interface{
 			content := row["note"].(string)
 			priority := row["priority"].(string)
 			statusRaw := row["status"].(string)
-			time := row["timestamp"].(string)
+			time := row["update_at"].(string)
 			time = time[:len(time)-3]
 			process := getProcess(getStatus(statusRaw))
 			note := []map[string]string{}
 			if _, ok := notes[hash]; ok {
 				note = notes[hash].([]map[string]string)
 				process = row["process_status"].(string)
-				mylog.Debug(fmt.Sprintf("process: %v", process))
 				process = strings.Replace(process, process[:1], strings.ToUpper(process[:1]), 1)
 			}
 			templateID := row["template_id"].(string)
@@ -424,6 +422,19 @@ func addPlatformToAlerts(alerts []interface{}, result map[string]interface{}, no
 				item.(map[string]interface{})["contact"] = contacts
 				items = append(items, item)
 			} else {
+				item.(map[string]interface{})["ip"] = "-"
+				item.(map[string]interface{})["platform"] = "-"
+				item.(map[string]interface{})["idc"] = "-"
+				contact := map[string]string{
+					"email": "-",
+					"name":  "-",
+					"phone": "-",
+				}
+				contacts := []interface{}{
+					contact,
+				}
+				item.(map[string]interface{})["contact"] = contacts
+				items = append(items, item)
 				log.Println("host deactivated:", hostname)
 			}
 		} else {
@@ -516,19 +527,25 @@ func getAlerts(rw http.ResponseWriter, req *http.Request) {
 	var result = make(map[string]interface{})
 	result["error"] = errors
 	alerts := []interface{}{}
-	items := []interface{}{}
-	username := req.URL.Query()["user"][0]
-	sig := req.URL.Query()["sig"][0]
+	username := req.URL.Query().Get("user")
+	sig := req.URL.Query().Get("sig")
 	templateIDs := getTemplateIDs(username, sig, result)
-	alerts = queryAlerts(templateIDs, result)
-	items, hostToPlatform := addPlatformToAlerts(alerts, result, nodes, rw)
-	count := getAlertCount(items)
-	result["items"] = items
-	nodes["result"] = result
-	nodes["count"] = count
-	nodes["hosts"] = hostToPlatform
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	setResponse(rw, nodes)
+	if templateIDs == "" {
+		nodes["result"] = result
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		setResponse(rw, nodes)
+	} else {
+		items := []interface{}{}
+		alerts = queryAlerts(templateIDs, result)
+		items, hostToPlatform := addPlatformToAlerts(alerts, result, nodes, rw)
+		count := getAlertCount(items)
+		result["items"] = items
+		nodes["result"] = result
+		nodes["count"] = count
+		nodes["hosts"] = hostToPlatform
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		setResponse(rw, nodes)
+	}
 }
 
 func configAlertRoutes() {
