@@ -198,8 +198,8 @@ func setupTimeRange(queryParams *dsl.QueryParams) {
 	if queryParams.StartTime.IsZero() && queryParams.EndTime.IsZero() {
 		now := time.Now()
 
-		queryParams.StartTime = now.Add(before7Days)
-		queryParams.EndTime = now
+		queryParams.StartTime = now.Add(before7Days) // Include 7 days before
+		queryParams.EndTime = now.Add(24 * time.Hour) // Include today
 		return
 	}
 
@@ -211,6 +211,10 @@ func setupTimeRange(queryParams *dsl.QueryParams) {
 	if !queryParams.StartTime.IsZero() && queryParams.EndTime.IsZero() {
 		queryParams.EndTime = queryParams.StartTime.Add(after7Days)
 		return
+	}
+
+	if queryParams.StartTime.Unix() == queryParams.EndTime.Unix() {
+		queryParams.EndTime = queryParams.StartTime.Add(24 * time.Hour)
 	}
 }
 

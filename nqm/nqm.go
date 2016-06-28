@@ -100,7 +100,7 @@ func (srv ServiceController) ListByProvinces(dslParams *dsl.QueryParams) []Provi
 	 * 2. Only for inter-province
 	 */
 	nqmDsl := toNqmDsl(dslParams)
-	nqmDsl.GroupingColumns = []string { "ib_ag_pv_id" }
+	nqmDsl.GroupingColumns = []string { "ag_pv_id" }
 	nqmDsl.ProvinceRelation = dsl.SAME_VALUE
 	// :~)
 
@@ -138,7 +138,7 @@ func (srv ServiceController) ListTargetsWithCityDetail(dslParams *dsl.QueryParam
 	 * Loads data with grouping by id of cities
 	 */
 	dslGroupByCity := toNqmDsl(dslParams)
-	dslGroupByCity.GroupingColumns = []string { "ib_tg_ct_id" }
+	dslGroupByCity.GroupingColumns = []string { "tg_ct_id" }
 	dslGroupByCity.ProvinceRelation = dsl.SAME_VALUE
 	rawIcmpGroupByCity, errForCityReport := srv.GetStatisticsOfIcmpByDsl(dslGroupByCity)
 	if errForCityReport != nil {
@@ -172,7 +172,7 @@ func (srv ServiceController) ListTargetsWithCityDetail(dslParams *dsl.QueryParam
 	 * Loads data with grouping by id of targets
 	 */
 	dslGroupByTarget := toNqmDsl(dslParams)
-	dslGroupByTarget.GroupingColumns = []string { "ib_tg_id", "ib_tg_ct_id", "ib_tg_isp_id" }
+	dslGroupByTarget.GroupingColumns = []string { "tg_id", "tg_ct_id", "tg_isp_id" }
 	rawIcmpGroupByTarget, errForTargetReport := srv.GetStatisticsOfIcmpByDsl(dslGroupByTarget)
 	if errForTargetReport != nil {
 		panic(errForTargetReport)
