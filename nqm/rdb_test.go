@@ -151,13 +151,14 @@ type getCityByNameTestCase struct {
 	searchText string
 	expectedId int32
 	expectedName string
+	expectedPostCode string
 }
 func (suite *TestNqmRdbSuite) TestGetCityByName(c *C) {
 	testCases := []getCityByNameTestCase {
-		{ "茂名", 20, "茂名市" },
-		{ "株洲市", 32, "株洲市" },
-		{ "無此city", UNKNOWN_ID_FOR_QUERY, "無此city" },
-		{ "無此city2", UNKNOWN_ID_FOR_QUERY, "無此city2" },
+		{ "茂名", 20, "茂名市", "525000" },
+		{ "株洲市", 32, "株洲市", "412000" },
+		{ "無此city", UNKNOWN_ID_FOR_QUERY, "無此city", UNKNOWN_NAME_FOR_QUERY },
+		{ "無此city2", UNKNOWN_ID_FOR_QUERY, "無此city2", UNKNOWN_NAME_FOR_QUERY },
 	}
 
 	for _, testCase := range testCases {
@@ -168,6 +169,7 @@ func (suite *TestNqmRdbSuite) TestGetCityByName(c *C) {
 		c.Assert(testedCity, NotNil)
 		c.Assert(testedCity.Id, Equals, int16(testCase.expectedId))
 		c.Assert(testedCity.Name, Equals, testCase.expectedName)
+		c.Assert(testedCity.PostCode, Equals, testCase.expectedPostCode)
 	}
 }
 
@@ -176,13 +178,14 @@ type getCityByIdTestCase struct {
 	searchId int16
 	expectedId int16
 	expectedName string
+	expectedPostCode string
 }
 func (suite *TestNqmRdbSuite) TestGetCityById(c *C) {
 	testCases := []getCityByIdTestCase {
-		{ 48, 48, "荆州市" },
-		{ 33, 33, "娄底市"},
-		{ -1, -1, "<UNDEFINED>" },
-		{ -919, -919, UNKNOWN_NAME_FOR_QUERY},
+		{ 48, 48, "荆州市", "434100" },
+		{ 33, 33, "娄底市", "417000"},
+		{ -1, -1, "<UNDEFINED>", "<UNDEFINED>" },
+		{ -919, -919, UNKNOWN_NAME_FOR_QUERY, UNKNOWN_NAME_FOR_QUERY},
 	}
 
 	for _, testCase := range testCases {
@@ -192,7 +195,8 @@ func (suite *TestNqmRdbSuite) TestGetCityById(c *C) {
 
 		c.Assert(testedCity, NotNil)
 		c.Assert(testedCity.Id, Equals, int16(testCase.expectedId))
-		c.Assert(testedCity.Id, Equals, testCase.expectedId)
+		c.Assert(testedCity.Name, Equals, testCase.expectedName)
+		c.Assert(testedCity.PostCode, Equals, testCase.expectedPostCode)
 	}
 }
 

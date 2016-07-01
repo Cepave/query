@@ -81,6 +81,7 @@ var nilCity = (*City)(nil)
 type City struct {
 	Id int16 `orm:"pk;column(ct_id)" json:"id"`
 	Name string `orm:"column(ct_name)" json:"name"`
+	PostCode string `orm:"column(ct_post_code)" json:"post_code"`
 }
 func (city *City) TableName() string {
     return "owl_city"

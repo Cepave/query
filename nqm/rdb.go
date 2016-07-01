@@ -65,7 +65,7 @@ func ListAgentsInCityByProvinceId(provinceId int32) []*AgentsInCity {
 	_, err := getOrmDb().Raw(
 		`
 		SELECT ag.ag_id, ag.ag_name, ag.ag_hostname, INET_NTOA(CONV(HEX(ag.ag_ip_address), 16, 10)) AS ag_ip_address,
-			ct.ct_id, ct.ct_name
+			ct.ct_id, ct.ct_name, ct.ct_post_code
 		FROM nqm_agent AS ag
 			INNER JOIN
 			nqm_ping_task AS pt
@@ -98,6 +98,7 @@ func ListAgentsInCityByProvinceId(provinceId int32) []*AgentsInCity {
 				City: &City{
 					Id: cityId,
 					Name: row["ct_name"].(string),
+					PostCode: row["ct_post_code"].(string),
 				},
 				Agents: make([]Agent, 0),
 			}
@@ -419,6 +420,7 @@ func loadCityFromDbById(cityId int16) (*City, error) {
 		func() interface{} {
 			city.Id = cityId
 			city.Name = UNKNOWN_NAME_FOR_QUERY
+			city.PostCode = UNKNOWN_NAME_FOR_QUERY
 			return &city
 		},
 		nilCity,
@@ -437,6 +439,7 @@ func loadCityFromDbByName(cityName string) (*City, error) {
 		func() interface{} {
 			city.Id = UNKNOWN_ID_FOR_QUERY
 			city.Name = cityName
+			city.PostCode = UNKNOWN_NAME_FOR_QUERY
 			return &city
 		},
 		nilCity,
