@@ -31,6 +31,8 @@ type NqmDsl struct {
 	IdsOfTargetProvinces []Id2Bytes `json:"ids_of_target_provinces"`
 	IdsOfTargetIsps []Id2Bytes `json:"ids_of_target_isps"`
 	IdsOfTargetCities []Id2Bytes `json:"ids_of_target_cities"`
+	IdsOfAgents []int32 `json:"ids_of_agents"`
+	IdsOfTargets []int32 `json:"ids_of_targets"`
 
 	ProvinceRelation dsl.HostRelation `json:"province_relation"`
 }
@@ -223,10 +225,20 @@ func toNqmDsl(queryParams *dsl.QueryParams) *NqmDsl {
 		IdsOfTargetProvinces: loadIds(queryParams.TargetFilter.MatchProvinces, getIdOfProvinceByName, queryParams.TargetFilterById.MatchProvinces),
 		IdsOfTargetIsps: loadIds(queryParams.TargetFilter.MatchIsps, getIdOfIspByName, queryParams.TargetFilterById.MatchIsps),
 		IdsOfTargetCities: loadIds(queryParams.TargetFilter.MatchCities, getIdOfCityByName, queryParams.TargetFilterById.MatchCities),
+		IdsOfAgents: safeIds(queryParams.AgentFilterById.MatchIds),
+		IdsOfTargets: safeIds(queryParams.TargetFilterById.MatchIds),
 		StartTime: EpochTime(queryParams.StartTime.Unix()),
 		EndTime: EpochTime(queryParams.EndTime.Unix()),
 		ProvinceRelation: queryParams.ProvinceRelation,
 	}
+}
+
+func safeIds(ids []int32) []int32 {
+	if ids == nil {
+		return make([]int32, 0)
+	}
+
+	return ids
 }
 
 func loadIds(

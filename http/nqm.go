@@ -100,9 +100,12 @@ func listIcmpByTargetsForAProvince(ctx *context.Context) {
 	provinceId, _ := strconv.ParseInt(ctx.Input.Param(":province_id"), 10, 16)
 	dslParams.AgentFilterById.MatchProvinces = []int16 { int16(provinceId) } // Use the id as the filter of agent
 
-	if cityId, parseErrForCityId := strconv.ParseInt(ctx.Input.Query("city_id_of_agent"), 10, 16)
+	if agentId, parseErrForAgentId := strconv.ParseInt(ctx.Input.Query("agent_id"), 10, 16)
+		parseErrForAgentId == nil {
+		dslParams.AgentFilterById.MatchIds = []int32 { int32(agentId) } // Set the filter by agent's id
+	} else if cityId, parseErrForCityId := strconv.ParseInt(ctx.Input.Query("city_id_of_agent"), 10, 16)
 		parseErrForCityId == nil {
-		dslParams.AgentFilterById.MatchCities = []int16 { int16(cityId) } // Use the id as the filter of agent
+		dslParams.AgentFilterById.MatchCities = []int16 { int16(cityId) } // Set the filter by city's id
 	}
 
 	listResult := nqmService.ListTargetsWithCityDetail(dslParams)

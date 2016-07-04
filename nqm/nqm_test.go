@@ -265,6 +265,7 @@ func (suite *TestNqmSuite) TestToNqmDsl(c *C) {
 			MatchProvinces: []int16 { 34, 34 },
 			MatchIsps: []int16 { 51, 52 },
 			MatchCities: []int16 { 63, 64 },
+			MatchIds: []int32 { 1021, 1022 },
 		},
 		TargetFilter: dsl.NodeFilter {
 			MatchProvinces: []string { "宁夏", "山东", "不存在" },
@@ -274,6 +275,7 @@ func (suite *TestNqmSuite) TestToNqmDsl(c *C) {
 			MatchProvinces: []int16 { 36, 36 },
 			MatchIsps: []int16 { 53, 54 },
 			MatchCities: []int16 { 66, 67 },
+			MatchIds: []int32 { 1081, 1082 },
 		},
 	}
 
@@ -291,6 +293,9 @@ func (suite *TestNqmSuite) TestToNqmDsl(c *C) {
 	c.Assert(testedDslParams.IdsOfTargetIsps, DeepEquals, []Id2Bytes { UNKNOWN_ID_FOR_QUERY, 18, 23, 53, 54 })
 	sort.Sort(idArray(testedDslParams.IdsOfTargetCities))
 	c.Assert(testedDslParams.IdsOfTargetCities, DeepEquals, []Id2Bytes { 66, 67 })
+
+	c.Assert(testedDslParams.IdsOfAgents, DeepEquals, []int32 { 1021, 1022 })
+	c.Assert(testedDslParams.IdsOfTargets, DeepEquals, []int32 { 1081, 1082 })
 }
 
 type idArray []Id2Bytes
